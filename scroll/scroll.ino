@@ -1,9 +1,12 @@
 #include <TM1638.h>
+// Used pins
 const int TM168_STR = 9; /* brown  */
 const int TM168_DAT = 8; /* orange */
 const int TM168_CLK = 7; /* green  */
 const int IR_DAT = 2;    /* brown  */
-const int RLY_DAT = 4;   /* yellow */
+const int RLY_CTL = 4;   /* yellow */
+// masks for button
+int button[8];
 
 //TM1638(byte dataPin, byte clockPin, byte strobePin, boolean activateDisplay, byte intensity);
 // 9=brown, 8=orange, 7=green 
@@ -32,8 +35,8 @@ int setIntensity(int lvl)
   if(lvl >= 7) lvl = 7;
   if(lvl <= 0) lvl = 0;
   module.setupDisplay(true, lvl);
-  module.setDisplayToDecNumber(lvl,0,true); 
-  delay(500);
+  module.setDisplayDigit(lvl, 7, false);
+  delay(700);
   module.setDisplayToDecNumber(0,0,true);
   return lvl;
 }
@@ -42,29 +45,41 @@ void setup() {
   // HARDWARE
   module.setDisplayToDecNumber(0,0,true);
   pinMode(IR_DAT, INPUT);
-  pinMode(RLY_DAT, OUTPUT);
+  pinMode(RLY_CTL, OUTPUT);
+  // calculate butons masks
+  for (int i=7 ; i--;){
+    button[i]=0x1<<i;
+  }
+  rly_state = false;
 }
 
 void loop() {
   // read the button value
   byte keys = module.getButtons();
-  if (keys == 0x1 || digitalRead(IR_DAT) == LOW){
+  // first button
+  if (keys == button[0] || digitalRead(IR_DAT) == LOW){
     start = !start; // start scrolling or pause
     delay(500);
   }
-  if (keys == 0x2) { // stop scrolling
+  if (keys == button[1]) { // stop scrolling
     start = false;
     clearLine();  
   }  
   // REGULATE light intensity
-  if (keys == 0x8){ // increase intensity
-    lumi++;
-    lumi =  setIntensity( lumi );
-  }
-  if (keys == 0x4){ // decrease intensity
+  if (keys == button[2]){ // decrease intensity
     lumi--;
     lumi = setIntensity( lumi );
   }
+  if (keys == button[3]){ // increase intensity
+    lumi++;
+    lumi =  setIntensity( lumi );
+  }
+  if (keys == button[4]){
+    rly_state = !rly_state;
+    digitalWrite(RLY_CTL, rly_state);
+    delay(500);
+  }
+
 
   if (start) {
     module.setLEDs((0x1 << pos) << (turn ? 8:0));
