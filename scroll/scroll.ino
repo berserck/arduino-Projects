@@ -18,7 +18,7 @@ boolean start=false;
 //LED colors
 int colors[4]={
   0xFF, 0xFF00, 0xFFFF, 0x0000};
-boolean turn=false;
+boolean turn, rly_state = false;
 int lumi = 5;
 
 // function to clear the line before pos
