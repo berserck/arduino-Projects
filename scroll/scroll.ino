@@ -40,7 +40,7 @@ int setIntensity(int lvl)
   module.setDisplayToDecNumber(0,0,true);
   return lvl;
 }
-
+/// -------------- SETUP --------------------
 void setup() {
   // HARDWARE
   module.setDisplayToDecNumber(0,0,true);
